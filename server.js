@@ -14,6 +14,9 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+const postRoutes = require('./routes/postRoutes');
+app.use('/api/posts', postRoutes);
+
 
 const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/blogsphere";
 
