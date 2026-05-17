@@ -114,10 +114,69 @@ const deletePost = async (req, res) => {
   }
 };
 
+const likePost = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?.userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: user not found in request' });
+    }
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const userIdString = userId.toString();
+    const alreadyLiked = post.likes.some(like => like.toString() === userIdString);
+
+    if (alreadyLiked) {
+      return res.status(400).json({ message: 'Post already liked by user' });
+    }
+
+    post.likes.push(userId);
+    const updatedPost = await post.save();
+    res.json(updatedPost);
+  } catch (error) {
+    console.error('likePost error', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const unlikePost = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?.userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: user not found in request' });
+    }
+
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const userIdString = userId.toString();
+    post.likes = post.likes.filter(like => like.toString() !== userIdString);
+
+    const updatedPost = await post.save();
+    res.json(updatedPost);
+  } catch (error) {
+    console.error('unlikePost error', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
   getPostById,
   updatePost,
   deletePost,
+  likePost,
+  unlikePost,
 };
