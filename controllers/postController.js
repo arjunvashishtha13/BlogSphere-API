@@ -29,14 +29,17 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    const searchQuery = search ? { title: { $regex: search, $options: 'i' } } : {};
 
     const [posts, total] = await Promise.all([
-      Post.find()
+      Post.find(searchQuery)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('author', 'name'),
-      Post.countDocuments(),
+      Post.countDocuments(searchQuery),
     ]);
 
     res.json({
