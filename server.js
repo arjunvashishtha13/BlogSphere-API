@@ -20,6 +20,9 @@ app.use('/api/posts', postRoutes);
 const commentRoutes = require('./routes/commentRoutes');
 app.use('/api/comments', commentRoutes);
 
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);
+
 const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/blogsphere";
 
 mongoose
