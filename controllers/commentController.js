@@ -1,74 +1,48 @@
-const Comment = require('../models/comment');
+const Comment = require('../models/Comment');
+const Post = require('../models/Post');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
 
-const addComment = async (req, res) => {
-  try {
-    const { text } = req.body;
-    const author = req.user?.id || req.user?.userId;
-    const { postId } = req.params;
+const addComment = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  const { postId } = req.params;
 
-    if (!author) {
-      return res.status(401).json({ message: 'Unauthorized: user not found in request' });
-    }
+  const post = await Post.findById(postId);
+  if (!post) throw new AppError('Post not found', 404);
 
-    if (!text) {
-      return res.status(400).json({ message: 'Comment text is required' });
-    }
+  const comment = await Comment.create({
+    text,
+    author: req.user.id,
+    post: postId,
+  });
 
-    const comment = new Comment({
-      text,
-      author,
-      post: postId,
-    });
+  const populated = await comment.populate('author', 'name avatar');
+  res.status(201).json({ success: true, comment: populated });
+});
 
-    const savedComment = await comment.save();
-    const populatedComment = await savedComment.populate('author', 'name');
-    res.status(201).json(populatedComment);
-  } catch (error) {
-    console.error('addComment error', error);
-    res.status(500).json({ message: 'Server error' });
+const getCommentsByPost = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+
+  const post = await Post.findById(postId);
+  if (!post) throw new AppError('Post not found', 404);
+
+  const comments = await Comment.find({ post: postId })
+    .populate('author', 'name avatar')
+    .sort({ createdAt: -1 });
+
+  res.json({ success: true, comments });
+});
+
+const deleteComment = asyncHandler(async (req, res) => {
+  const comment = await Comment.findById(req.params.id);
+  if (!comment) throw new AppError('Comment not found', 404);
+
+  if (comment.author.toString() !== req.user.id.toString()) {
+    throw new AppError('Forbidden: only comment author can delete', 403);
   }
-};
 
-const getCommentsByPost = async (req, res) => {
-  try {
-    const { postId } = req.params;
+  await comment.deleteOne();
+  res.json({ success: true, message: 'Comment deleted successfully' });
+});
 
-    const comments = await Comment.find({ post: postId })
-      .populate('author', 'name')
-      .sort({ createdAt: -1 });
-
-    res.json(comments);
-  } catch (error) {
-    console.error('getCommentsByPost error', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-const deleteComment = async (req, res) => {
-  try {
-    const author = req.user?.id || req.user?.userId;
-    const { commentId } = req.params;
-
-    const comment = await Comment.findById(commentId);
-
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
-
-    if (!author || comment.author.toString() !== author.toString()) {
-      return res.status(403).json({ message: 'Forbidden: only comment author can delete comment' });
-    }
-
-    await comment.deleteOne();
-    res.json({ message: 'Comment deleted successfully' });
-  } catch (error) {
-    console.error('deleteComment error', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-module.exports = {
-  addComment,
-  getCommentsByPost,
-  deleteComment,
-};
+module.exports = { addComment, getCommentsByPost, deleteComment };

@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --color-canvas: #f7f5f0;
+  --color-canvas-dark: #121210;
+  --color-ink: #111110;
+  --color-ink-muted: #5c5a54;
+  --color-ink-faint: #8a877f;
+  --color-accent: #b45309;
+  --color-accent-hover: #92400e;
+  --color-border: #e4e0d6;
+  --color-border-dark: #2a2926;
+  --color-surface: #ffffff;
+  --color-surface-dark: #1a1917;
+  --color-sage: #5c6b5e;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-body antialiased transition-colors duration-300;
+  }
+
+  .dark body,
+  body:where(.dark *) {
+    @apply bg-canvas-dark text-[#e8e6e1];
+  }
+
+  ::selection {
+    @apply bg-accent/20 text-ink;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .prose-blog h1,
+  .prose-blog h2,
+  .prose-blog h3 {
+    font-family: var(--font-display);
+    @apply font-semibold tracking-tight;
+  }
+
+  .prose-blog p {
+    @apply leading-relaxed text-ink-muted dark:text-[#b8b5ad];
+  }
+
+  .prose-blog h1 { @apply text-3xl mt-8 mb-4; }
+  .prose-blog h2 { @apply text-2xl mt-6 mb-3; }
+  .prose-blog h3 { @apply text-xl mt-5 mb-2; }
+  .prose-blog p { @apply mb-4; }
+  .prose-blog ul { @apply list-disc pl-6 mb-4; }
+  .prose-blog ol { @apply list-decimal pl-6 mb-4; }
+  .prose-blog blockquote {
+    @apply border-l-2 border-accent pl-4 italic my-6 text-ink-muted;
+  }
+  .prose-blog code {
+    @apply bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-sm;
+  }
+  .prose-blog pre {
+    @apply bg-[#1a1917] text-[#e8e6e1] p-4 rounded-lg overflow-x-auto my-4 text-sm;
+  }
+}

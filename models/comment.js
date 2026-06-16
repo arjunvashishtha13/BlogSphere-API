@@ -4,7 +4,9 @@ const commentSchema = new mongoose.Schema(
   {
     text: {
       type: String,
-      required: true,
+      required: [true, 'Comment text is required'],
+      trim: true,
+      maxlength: [1000, 'Comment cannot exceed 1000 characters'],
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,9 +19,9 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+commentSchema.index({ post: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Comment', commentSchema);

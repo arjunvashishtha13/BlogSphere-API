@@ -1,73 +1,58 @@
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
 
+const signToken = (userId) =>
+  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-const registerUser = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
 
-    
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-  
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    
-    const savedUser = await newUser.save();
-
-    
-    const { password: _, ...userWithoutPassword } = savedUser.toObject();
-    res.status(201).json(userWithoutPassword);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AppError('User already exists with this email', 400);
   }
-};
 
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 12);
+  const user = await User.create({ name, email, password: hashedPassword });
+  const token = signToken(user._id);
 
-   
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+  res.status(201).json({
+    success: true,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      createdAt: user.createdAt,
+    },
+    token,
+  });
+});
 
-   
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-   
-    const { password: _, ...userWithoutPassword } = user.toObject();
-    res.json({ user: userWithoutPassword, token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  const user = await User.findOne({ email }).select('+password');
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw new AppError('Invalid credentials', 401);
   }
-};
 
-module.exports = {
-  registerUser,
-  loginUser,
-};
+  const token = signToken(user._id);
 
+  res.json({
+    success: true,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      createdAt: user.createdAt,
+    },
+    token,
+  });
+});
 
-
-
+module.exports = { registerUser, loginUser };
