@@ -47,6 +47,7 @@ export default function WritePage() {
   }, [existingPost, editId]);
 
   useEffect(() => {
+    if (editId) return; // Don't overwrite real draft when editing a published post
     const timer = setTimeout(() => {
       if (title || content) {
         saveDraft({
@@ -59,7 +60,7 @@ export default function WritePage() {
       }
     }, 1500);
     return () => clearTimeout(timer);
-  }, [title, content, category, coverImage, tags, saveDraft]);
+  }, [title, content, category, coverImage, tags, saveDraft, editId]);
 
   const publishMutation = useMutation({
     mutationFn: (status) => {

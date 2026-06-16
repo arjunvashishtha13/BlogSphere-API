@@ -21,6 +21,7 @@ const formatUser = (user) => ({
   linkedin: user.linkedin,
   role: user.role,
   isVerified: user.isVerified,
+  isBanned: user.isBanned,
   createdAt: user.createdAt,
 });
 
