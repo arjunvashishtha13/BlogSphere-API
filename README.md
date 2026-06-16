@@ -1,151 +1,142 @@
-# BlogSphere
+<div align="center">
+  <h1>BlogSphere</h1>
+  <p>A modern, full-stack blogging platform built for writers and readers. Fast, beautiful, and secure.</p>
+</div>
 
-A production-ready full-stack blogging platform built with **Node.js**, **Express**, **MongoDB**, and **React**. Designed as a portfolio project that demonstrates modern API architecture, thoughtful UI design, and real-world features beyond basic CRUD.
+---
 
-![BlogSphere](https://img.shields.io/badge/Node.js-Express-green) ![React](https://img.shields.io/badge/React-Vite-blue) ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-green)
+## 🌟 Features
 
-## Features
+BlogSphere is built with a focus on clean design, performance, and a rich user experience.
 
-### Frontend
-- Premium editorial UI with dark/light mode (persisted)
-- Hero landing page with featured & trending sections
-- Instant search, category filtering, pagination
-- Rich markdown editor with live preview & auto-save drafts
-- Blog detail: likes, bookmarks, share, comments, related posts
-- Author profiles & protected user dashboard
-- Analytics: views, likes, top posts, reading history, recommendations
-- Skeleton loaders, empty states, toast notifications
-- Framer Motion page transitions, lazy-loaded routes
-- SEO: meta tags, Open Graph, structured data
+- **Rich Text Markdown Editing**: Write stories effortlessly with real-time Markdown preview.
+- **Content Management**: Save drafts, publish, edit, and delete posts.
+- **Admin Dashboard**: Full administrative control to manage users, ban accounts, delete comments, and feature standout posts.
+- **Cloudinary Integration**: Fast and secure image uploads for cover photos and inline post images.
+- **User Engagement**: Like, comment, and bookmark your favorite posts.
+- **Smart Recommendations**: A personalized reading history and tailored post recommendations.
+- **Analytics tracking**: View counts and basic analytics for writers.
+- **Security First**: Protected against NoSQL injection, XSS, and parameter pollution. Fully rate-limited.
+- **Modern UI/UX**: Fully responsive, dark-mode ready, glassmorphism design powered by Tailwind CSS and Framer Motion.
 
-### Backend
-- RESTful API with centralized error handling
-- JWT authentication with input validation (`express-validator`)
-- Posts: CRUD, drafts, categories, tags, views, reading time
-- Likes, bookmarks, comments, reading history
-- Featured, trending, related posts, analytics endpoints
-- MongoDB indexes for optimized queries
-- Cascade delete comments when post is deleted
+---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer    | Technologies                                      |
-| -------- | ------------------------------------------------- |
-| Backend  | Node.js, Express 5, MongoDB, Mongoose, JWT, bcrypt |
-| Frontend | React 19, Vite, Tailwind CSS 4, Framer Motion     |
-| State    | Zustand, TanStack React Query                     |
-| UI       | Lucide icons, React Hot Toast, React Helmet Async |
+**Frontend**
+- React 18 (Vite)
+- Tailwind CSS v4 (Styling)
+- Zustand (Global State Management)
+- TanStack React Query (Data Fetching & Caching)
+- React Router v6 (Navigation)
+- Framer Motion (Animations)
+- Lucide React (Icons)
 
-## Project Structure
+**Backend**
+- Node.js & Express.js
+- MongoDB & Mongoose (Database)
+- JSON Web Tokens (JWT) & bcryptjs (Authentication)
+- Cloudinary & Multer (Image processing and storage)
+- Helmet, HPP, Express-Mongo-Sanitize (Security)
 
-```
-BlogSphere-API/
-├── client/                 # React frontend
-│   └── src/
-│       ├── api/            # API client
-│       ├── components/     # Reusable UI components
-│       ├── pages/          # Route pages
-│       ├── store/          # Zustand stores
-│       └── utils/          # Helpers
-├── config/                 # Database config
-├── controllers/            # Route handlers
-├── middleware/             # Auth, validation, errors
-├── models/                 # Mongoose schemas
-├── routes/                 # Express routes
-├── utils/                  # AppError, asyncHandler
-├── validators/             # Request validation rules
-└── server.js               # Entry point
-```
+---
 
-## Getting Started
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB running locally or a MongoDB Atlas URI
+- Node.js (v18+)
+- MongoDB Atlas account (or local MongoDB)
+- Cloudinary account (for image uploads)
 
-### 1. Clone & configure
-
+### 1. Clone the repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/arjunvashishtha13/BlogSphere-API.git
 cd BlogSphere-API
-cp .env.example .env
 ```
 
-Edit `.env` and set a strong `JWT_SECRET`.
-
-### 2. Install dependencies
-
+### 2. Backend Setup
+Install backend dependencies:
 ```bash
 npm install
-cd client && npm install
 ```
 
-### 3. Run development servers
+Create a `.env` file in the root directory:
+```env
+PORT=5000
+NODE_ENV=development
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_jwt_key
+CLIENT_URL=http://localhost:5173
 
-**Terminal 1 — API (port 5000):**
+# Cloudinary Setup
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Optional: Nodemailer for forgot password/verification
+EMAIL_HOST=smtp.mailtrap.io
+EMAIL_PORT=2525
+EMAIL_USER=your_user
+EMAIL_PASS=your_pass
+EMAIL_FROM=noreply@blogsphere.com
+```
+
+Start the backend dev server:
 ```bash
 npm run dev
 ```
 
-**Terminal 2 — Frontend (port 5173):**
+### 3. Frontend Setup
+Open a new terminal and navigate to the client folder:
 ```bash
-cd client && npm run dev
+cd client
+npm install
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
-
-## API Endpoints
-
-### Auth
-| Method | Endpoint              | Description        |
-| ------ | --------------------- | ------------------ |
-| POST   | `/api/auth/register`  | Register + JWT     |
-| POST   | `/api/auth/login`     | Login + JWT        |
-
-### Posts
-| Method | Endpoint                    | Description              |
-| ------ | --------------------------- | ------------------------ |
-| GET    | `/api/posts`                | List (search, filter, paginate) |
-| GET    | `/api/posts/featured`       | Featured posts           |
-| GET    | `/api/posts/trending`       | Trending (7 days)        |
-| GET    | `/api/posts/categories`     | Category counts          |
-| GET    | `/api/posts/:id`            | Single post (+ view count) |
-| GET    | `/api/posts/:id/related`    | Related posts            |
-| POST   | `/api/posts`                | Create (auth)            |
-| PUT    | `/api/posts/:id`            | Update (auth, author)    |
-| DELETE | `/api/posts/:id`            | Delete (auth, author)    |
-| POST   | `/api/posts/:id/like`       | Like (auth)              |
-| POST   | `/api/posts/:id/unlike`     | Unlike (auth)            |
-
-### Users
-| Method | Endpoint                      | Description           |
-| ------ | ----------------------------- | --------------------- |
-| GET    | `/api/users/profile`          | Own profile + stats   |
-| PUT    | `/api/users/profile`          | Update profile        |
-| GET    | `/api/users/posts`            | Own posts             |
-| GET    | `/api/users/analytics`        | Dashboard analytics   |
-| GET    | `/api/users/bookmarks`        | Saved posts           |
-| POST   | `/api/users/bookmarks/:postId`| Toggle bookmark       |
-| GET    | `/api/users/history`          | Reading history       |
-| GET    | `/api/users/recommendations`  | Personalized picks    |
-| GET    | `/api/users/:id`              | Public author profile |
-
-### Comments
-| Method | Endpoint                    | Description        |
-| ------ | --------------------------- | ------------------ |
-| POST   | `/api/comments/:postId`     | Add comment (auth) |
-| GET    | `/api/comments/:postId`     | List comments      |
-| DELETE | `/api/comments/:id`         | Delete (auth)      |
-
-## Production Build
-
-```bash
-cd client && npm run build
-npm start
+Create a `.env` file inside the `/client` directory:
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
-Serve the `client/dist` folder via a static host or reverse proxy alongside the API.
+Start the frontend dev server:
+```bash
+npm run dev
+```
 
-## License
+The app will be running at `http://localhost:5173`.
 
-ISC
+---
+
+## 👑 Admin Setup
+
+To access the Admin Dashboard, your user account must have the `admin` role. You can easily promote an existing user to an admin using the included seed script.
+
+1. Register an account normally through the website frontend.
+2. In your terminal, at the root of the project, run:
+```bash
+node scripts/seedAdmin.js your_email@example.com
+```
+3. Refresh your browser. You will now see the Admin Dashboard in your profile dropdown.
+
+---
+
+## 🌐 Deployment Guidelines
+
+**Backend (Render, Railway, Heroku)**
+- Set root directory to `/`
+- Build command: `npm install`
+- Start command: `npm start`
+- Add all environment variables from your `.env` file. Change `CLIENT_URL` to your production frontend URL.
+
+**Frontend (Vercel, Netlify)**
+- Set root directory to `/client`
+- Build command: `npm run build`
+- Start command: `npm run preview`
+- Set `VITE_API_URL` to your production backend URL (e.g., `https://your-backend.com/api`).
+- *Note for Vercel*: The repository includes a `client/vercel.json` file to ensure React Router handles client-side routing correctly without throwing 404 errors.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
