@@ -79,6 +79,36 @@ const deleteUser = asyncHandler(async (req, res) => {
   res.json({ success: true, message: `User ${user.name} has been deleted` });
 });
 
+// Post moderation — list all posts
+const getPosts = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 20;
+  const skip = (page - 1) * limit;
+  const search = req.query.search || '';
+
+  const filter = search
+    ? { title: { $regex: search, $options: 'i' } }
+    : {};
+
+  const [posts, total] = await Promise.all([
+    Post.find(filter)
+      .select('title status isFeatured views likes category createdAt author coverImage')
+      .populate('author', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Post.countDocuments(filter),
+  ]);
+
+  const postsWithLikeCount = posts.map((p) => ({
+    ...p,
+    likeCount: p.likes?.length ?? 0,
+  }));
+
+  res.json({ success: true, posts: postsWithLikeCount, total, page, totalPages: Math.ceil(total / limit) });
+});
+
 // Post moderation
 const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id);
@@ -101,6 +131,27 @@ const toggleFeaturePost = asyncHandler(async (req, res) => {
   await post.save();
 
   res.json({ success: true, isFeatured: post.isFeatured, message: post.isFeatured ? 'Post featured' : 'Post unfeatured' });
+});
+
+// Comment moderation — list all comments
+const getComments = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 30;
+  const skip = (page - 1) * limit;
+
+  const [comments, total] = await Promise.all([
+    Comment.find()
+      .select('text author post createdAt')
+      .populate('author', 'name email avatar')
+      .populate('post', 'title _id')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Comment.countDocuments(),
+  ]);
+
+  res.json({ success: true, comments, total, page, totalPages: Math.ceil(total / limit) });
 });
 
 // Comment moderation
@@ -156,8 +207,10 @@ module.exports = {
   banUser,
   unbanUser,
   deleteUser,
+  getPosts,
   deletePost,
   toggleFeaturePost,
+  getComments,
   deleteComment,
   getAnalytics,
 };

@@ -5,8 +5,10 @@ const {
   banUser,
   unbanUser,
   deleteUser,
+  getPosts,
   deletePost,
   toggleFeaturePost,
+  getComments,
   deleteComment,
   getAnalytics,
 } = require('../controllers/adminController');
@@ -23,8 +25,10 @@ router.get('/users', getUsers);
 router.put('/users/:id/ban', banUser);
 router.put('/users/:id/unban', unbanUser);
 router.delete('/users/:id', deleteUser);
+router.get('/posts', getPosts);
 router.delete('/posts/:id', deletePost);
 router.put('/posts/:id/feature', toggleFeaturePost);
+router.get('/comments', getComments);
 router.delete('/comments/:id', deleteComment);
 router.get('/analytics', getAnalytics);
 

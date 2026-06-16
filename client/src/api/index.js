@@ -71,8 +71,10 @@ export const adminApi = {
   banUser: (id) => api.put(`/admin/users/${id}/ban`),
   unbanUser: (id) => api.put(`/admin/users/${id}/unban`),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  posts: (params) => api.get('/admin/posts', { params }),
   deletePost: (id) => api.delete(`/admin/posts/${id}`),
   featurePost: (id) => api.put(`/admin/posts/${id}/feature`),
+  comments: (params) => api.get('/admin/comments', { params }),
   deleteComment: (id) => api.delete(`/admin/comments/${id}`),
   analytics: () => api.get('/admin/analytics'),
 };
