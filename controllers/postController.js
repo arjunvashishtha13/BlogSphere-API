@@ -1,6 +1,9 @@
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const Bookmark = require('../models/Bookmark');
 const ReadingHistory = require('../models/ReadingHistory');
+const ViewLog = require('../models/ViewLog');
+const Notification = require('../models/Notification');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 
@@ -36,7 +39,7 @@ const buildListQuery = (query, userId) => {
 };
 
 const createPost = asyncHandler(async (req, res) => {
-  const { title, content, tags, category, status, excerpt } = req.body;
+  const { title, content, tags, category, status, excerpt, coverImage } = req.body;
 
   const post = await Post.create({
     title,
@@ -45,6 +48,7 @@ const createPost = asyncHandler(async (req, res) => {
     category: category || 'Technology',
     status: status || 'published',
     excerpt,
+    coverImage: coverImage || '',
     author: req.user.id,
   });
 
@@ -61,7 +65,7 @@ const getAllPosts = asyncHandler(async (req, res) => {
   const sortField = req.query.sort === 'views' ? { views: -1 } : { createdAt: -1 };
 
   const [posts, total] = await Promise.all([
-    populatePost(Post.find(filter).sort(sortField).skip(skip).limit(limit)),
+    populatePost(Post.find(filter).sort(sortField).skip(skip).limit(limit).lean()),
     Post.countDocuments(filter),
   ]);
 
@@ -76,11 +80,25 @@ const getAllPosts = asyncHandler(async (req, res) => {
 });
 
 const getFeaturedPosts = asyncHandler(async (req, res) => {
-  const posts = await populatePost(
-    Post.find({ status: 'published' })
-      .sort({ likes: -1, views: -1 })
+  // Prefer admin-featured posts, fallback to most liked/viewed
+  let posts = await populatePost(
+    Post.find({ status: 'published', isFeatured: true })
+      .sort({ createdAt: -1 })
       .limit(6)
+      .lean()
   );
+
+  if (posts.length < 6) {
+    const featuredIds = posts.map((p) => p._id);
+    const more = await populatePost(
+      Post.find({ status: 'published', _id: { $nin: featuredIds } })
+        .sort({ likes: -1, views: -1 })
+        .limit(6 - posts.length)
+        .lean()
+    );
+    posts = [...posts, ...more];
+  }
+
   res.json({ success: true, posts });
 });
 
@@ -90,6 +108,7 @@ const getTrendingPosts = asyncHandler(async (req, res) => {
     Post.find({ status: 'published', createdAt: { $gte: sevenDaysAgo } })
       .sort({ views: -1, likes: -1 })
       .limit(8)
+      .lean()
   );
   res.json({ success: true, posts });
 });
@@ -105,8 +124,17 @@ const getPostById = asyncHandler(async (req, res) => {
     throw new AppError('Post not found', 404);
   }
 
-  await Post.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
-  post.views += 1;
+  // Unique view tracking using IP-based dedup
+  const clientIp = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+  try {
+    await ViewLog.create({ post: post._id, ip: clientIp });
+    // Only increment if this is a new unique view (create succeeded)
+    await Post.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+    post.views += 1;
+  } catch (err) {
+    // Duplicate key error means already viewed within 24h — skip increment
+    if (err.code !== 11000) throw err;
+  }
 
   if (req.user?.id) {
     await ReadingHistory.findOneAndUpdate(
@@ -119,7 +147,20 @@ const getPostById = asyncHandler(async (req, res) => {
   const userId = req.user?.id?.toString();
   const isLiked = userId ? post.likes.some((id) => id.toString() === userId) : false;
 
-  res.json({ success: true, post: { ...post.toObject(), isLiked, likeCount: post.likes.length } });
+  // Check bookmark status
+  let isBookmarked = false;
+  if (userId) {
+    const bookmark = await Bookmark.findOne({ user: req.user.id, post: post._id });
+    isBookmarked = !!bookmark;
+  }
+
+  // Comment count
+  const commentCount = await Comment.countDocuments({ post: post._id });
+
+  res.json({
+    success: true,
+    post: { ...post.toObject(), isLiked, isBookmarked, likeCount: post.likes.length, commentCount },
+  });
 });
 
 const getRelatedPosts = asyncHandler(async (req, res) => {
@@ -134,6 +175,7 @@ const getRelatedPosts = asyncHandler(async (req, res) => {
     })
       .sort({ views: -1 })
       .limit(4)
+      .lean()
   );
 
   res.json({ success: true, posts });
@@ -147,13 +189,14 @@ const updatePost = asyncHandler(async (req, res) => {
     throw new AppError('Forbidden: only author can update post', 403);
   }
 
-  const { title, content, tags, category, status, excerpt } = req.body;
+  const { title, content, tags, category, status, excerpt, coverImage } = req.body;
   if (title !== undefined) post.title = title;
   if (content !== undefined) post.content = content;
   if (tags !== undefined) post.tags = tags;
   if (category !== undefined) post.category = category;
   if (status !== undefined) post.status = status;
   if (excerpt !== undefined) post.excerpt = excerpt;
+  if (coverImage !== undefined) post.coverImage = coverImage;
 
   await post.save();
   const populated = await populatePost(Post.findById(post._id));
@@ -164,12 +207,19 @@ const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id);
   if (!post) throw new AppError('Post not found', 404);
 
-  if (post.author.toString() !== req.user.id.toString()) {
+  // Allow admin or author to delete
+  const isAdmin = req.user.role === 'admin';
+  if (!isAdmin && post.author.toString() !== req.user.id.toString()) {
     throw new AppError('Forbidden: only author can delete post', 403);
   }
 
-  await Comment.deleteMany({ post: post._id });
-  await post.deleteOne();
+  await Promise.all([
+    Comment.deleteMany({ post: post._id }),
+    Bookmark.deleteMany({ post: post._id }),
+    Notification.deleteMany({ post: post._id }),
+    post.deleteOne(),
+  ]);
+
   res.json({ success: true, message: 'Post deleted successfully' });
 });
 
@@ -184,6 +234,17 @@ const likePost = asyncHandler(async (req, res) => {
 
   post.likes.push(req.user.id);
   await post.save();
+
+  // Create notification (don't notify self)
+  if (post.author.toString() !== userId) {
+    await Notification.create({
+      recipient: post.author,
+      sender: req.user.id,
+      type: 'like',
+      post: post._id,
+    });
+  }
+
   res.json({ success: true, likeCount: post.likes.length, isLiked: true });
 });
 
@@ -195,6 +256,11 @@ const unlikePost = asyncHandler(async (req, res) => {
   const hadLike = post.likes.some((id) => id.toString() === userId);
   post.likes = post.likes.filter((id) => id.toString() !== userId);
   await post.save();
+
+  // Remove notification
+  if (hadLike) {
+    await Notification.deleteOne({ sender: req.user.id, post: post._id, type: 'like' });
+  }
 
   res.json({ success: true, likeCount: post.likes.length, isLiked: false, removed: hadLike });
 });

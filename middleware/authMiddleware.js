@@ -21,7 +21,11 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     throw new AppError('Unauthorized: user not found', 401);
   }
 
-  req.user = { id: user._id, email: user.email, name: user.name };
+  if (user.isBanned) {
+    throw new AppError('Your account has been suspended', 403);
+  }
+
+  req.user = { id: user._id, email: user.email, name: user.name, role: user.role };
   next();
 });
 

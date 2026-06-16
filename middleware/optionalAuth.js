@@ -13,8 +13,8 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded?.userId) {
       const user = await User.findById(decoded.userId).select('-password');
-      if (user) {
-        req.user = { id: user._id, email: user.email, name: user.name };
+      if (user && !user.isBanned) {
+        req.user = { id: user._id, email: user.email, name: user.name, role: user.role };
       }
     }
   } catch {

@@ -169,6 +169,16 @@ export default function BlogDetailPage() {
             )}
           </header>
 
+          {post.coverImage && (
+            <div className="mb-10 w-full overflow-hidden rounded-2xl border border-border dark:border-border-dark aspect-video">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
+
           <div
             className="prose-blog text-base"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}

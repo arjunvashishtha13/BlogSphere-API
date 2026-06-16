@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Sun, Moon, Menu, X, PenLine, LayoutDashboard, LogOut } from 'lucide-react';
+import { Search, Sun, Moon, Menu, X, PenLine, LayoutDashboard, LogOut, Bookmark, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore, useThemeStore } from '../store/authStore';
 import Button from './Button';
+import NotificationDropdown from './NotificationDropdown';
 
 export default function Navbar() {
   const { user, logout } = useAuthStore();
@@ -22,6 +23,8 @@ export default function Navbar() {
       ? [
           { to: '/write', label: 'Write' },
           { to: '/dashboard', label: 'Dashboard' },
+          { to: '/bookmarks', label: 'Bookmarks' },
+          ...(user.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
         ]
       : []),
   ];
@@ -61,12 +64,17 @@ export default function Navbar() {
             {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
 
+          {user && <NotificationDropdown />}
+
           {user ? (
             <div className="flex items-center gap-2 ml-2">
               <Link
                 to={`/author/${user._id}`}
-                className="text-sm font-medium px-3 py-2 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
+                className="flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
               >
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="h-6 w-6 rounded-full object-cover" />
+                ) : null}
                 {user.name}
               </Link>
               <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Logout">

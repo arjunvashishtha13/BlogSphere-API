@@ -3,6 +3,10 @@ import api from './client';
 export const authApi = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  verifyEmail: (token) => api.get(`/auth/verify/${token}`),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
+  resendVerification: () => api.post('/auth/resend-verification'),
 };
 
 export const postsApi = {
@@ -20,9 +24,11 @@ export const postsApi = {
 };
 
 export const commentsApi = {
-  list: (postId) => api.get(`/comments/${postId}`),
-  create: (postId, text) => api.post(`/comments/${postId}`, { text }),
+  list: (postId, params) => api.get(`/comments/${postId}`, { params }),
+  create: (postId, data) => api.post(`/comments/${postId}`, typeof data === 'string' ? { text: data } : data),
+  edit: (id, text) => api.put(`/comments/${id}`, { text }),
   delete: (id) => api.delete(`/comments/${id}`),
+  count: (postId) => api.get(`/comments/${postId}/count`),
 };
 
 export const usersApi = {
@@ -35,4 +41,38 @@ export const usersApi = {
   history: () => api.get('/users/history'),
   analytics: () => api.get('/users/analytics'),
   recommendations: () => api.get('/users/recommendations'),
+};
+
+export const uploadApi = {
+  image: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onProgress,
+    });
+  },
+};
+
+export const searchApi = {
+  suggestions: (q) => api.get('/search/suggestions', { params: { q } }),
+};
+
+export const notificationsApi = {
+  list: (params) => api.get('/notifications', { params }),
+  unreadCount: () => api.get('/notifications/unread-count'),
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllRead: () => api.put('/notifications/read-all'),
+};
+
+export const adminApi = {
+  stats: () => api.get('/admin/stats'),
+  users: (params) => api.get('/admin/users', { params }),
+  banUser: (id) => api.put(`/admin/users/${id}/ban`),
+  unbanUser: (id) => api.put(`/admin/users/${id}/unban`),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  deletePost: (id) => api.delete(`/admin/posts/${id}`),
+  featurePost: (id) => api.put(`/admin/posts/${id}/feature`),
+  deleteComment: (id) => api.delete(`/admin/comments/${id}`),
+  analytics: () => api.get('/admin/analytics'),
 };

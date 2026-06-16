@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import { Skeleton } from './components/Skeleton';
 import { useThemeStore } from './store/authStore';
 
@@ -11,9 +12,16 @@ const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 const WritePage = lazy(() => import('./pages/WritePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AuthorPage = lazy(() => import('./pages/AuthorPage'));
+const EditProfilePage = lazy(() => import('./pages/EditProfilePage'));
+const BookmarksPage = lazy(() => import('./pages/BookmarksPage'));
+const TagPage = lazy(() => import('./pages/TagPage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 function PageLoader() {
   return (
@@ -47,7 +55,11 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           <Route path="/author/:id" element={<AuthorPage />} />
+          <Route path="/tags/:tag" element={<TagPage />} />
+          <Route path="/categories/:category" element={<CategoryPage />} />
           <Route
             path="/write"
             element={
@@ -62,6 +74,30 @@ export default function App() {
               <ProtectedRoute>
                 <DashboardPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/profile"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookmarks"
+            element={
+              <ProtectedRoute>
+                <BookmarksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
             }
           />
         </Routes>

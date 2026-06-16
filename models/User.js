@@ -31,8 +31,43 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Social links
+    website: { type: String, default: '' },
+    github: { type: String, default: '' },
+    twitter: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+    // Role-based access
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+    // Email verification
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      select: false,
+    },
+    // Password reset
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordExpire: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );
+
+userSchema.index({ name: 'text' });
 
 module.exports = mongoose.model('User', userSchema);

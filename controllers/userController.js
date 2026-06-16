@@ -36,27 +36,65 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const { name, bio } = req.body;
+  const { name, bio, avatar, website, github, twitter, linkedin } = req.body;
   const user = await User.findById(req.user.id);
 
   if (!user) throw new AppError('User not found', 404);
   if (name !== undefined) user.name = name;
   if (bio !== undefined) user.bio = bio;
+  if (avatar !== undefined) user.avatar = avatar;
+  if (website !== undefined) user.website = website;
+  if (github !== undefined) user.github = github;
+  if (twitter !== undefined) user.twitter = twitter;
+  if (linkedin !== undefined) user.linkedin = linkedin;
 
   await user.save();
-  res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email, bio: user.bio } });
+
+  res.json({
+    success: true,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      avatar: user.avatar,
+      website: user.website,
+      github: user.github,
+      twitter: user.twitter,
+      linkedin: user.linkedin,
+      role: user.role,
+    },
+  });
 });
 
 const getPublicProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('name bio avatar createdAt');
+  const user = await User.findById(req.params.id).select(
+    'name bio avatar website github twitter linkedin createdAt'
+  );
   if (!user) throw new AppError('User not found', 404);
 
-  const posts = await Post.find({ author: user._id, status: 'published' })
-    .sort({ createdAt: -1 })
-    .populate('author', 'name')
-    .select('-content');
+  const [posts, totalLikes] = await Promise.all([
+    Post.find({ author: user._id, status: 'published' })
+      .sort({ createdAt: -1 })
+      .populate('author', 'name avatar')
+      .select('-content')
+      .lean(),
+    Post.aggregate([
+      { $match: { author: user._id, status: 'published' } },
+      { $project: { likeCount: { $size: '$likes' } } },
+      { $group: { _id: null, total: { $sum: '$likeCount' } } },
+    ]),
+  ]);
 
-  res.json({ success: true, user, posts });
+  res.json({
+    success: true,
+    user: {
+      ...user.toObject(),
+      totalLikes: totalLikes[0]?.total || 0,
+      totalPosts: posts.length,
+    },
+    posts,
+  });
 });
 
 const getUserPosts = asyncHandler(async (req, res) => {
@@ -66,7 +104,8 @@ const getUserPosts = asyncHandler(async (req, res) => {
 
   const posts = await Post.find(filter)
     .sort({ updatedAt: -1 })
-    .populate('author', 'name');
+    .populate('author', 'name avatar')
+    .lean();
 
   res.json({ success: true, posts });
 });
@@ -91,7 +130,7 @@ const getBookmarks = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .populate({
       path: 'post',
-      populate: { path: 'author', select: 'name' },
+      populate: { path: 'author', select: 'name avatar' },
     });
 
   res.json({
@@ -106,7 +145,7 @@ const getReadingHistory = asyncHandler(async (req, res) => {
     .limit(20)
     .populate({
       path: 'post',
-      populate: { path: 'author', select: 'name' },
+      populate: { path: 'author', select: 'name avatar' },
     });
 
   res.json({
@@ -175,7 +214,8 @@ const getRecommendations = asyncHandler(async (req, res) => {
   const posts = await Post.find(filter)
     .sort({ views: -1 })
     .limit(6)
-    .populate('author', 'name');
+    .populate('author', 'name avatar')
+    .lean();
 
   res.json({ success: true, posts });
 });

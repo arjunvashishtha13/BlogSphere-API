@@ -29,6 +29,10 @@ const postSchema = new mongoose.Schema(
       default: '',
       maxlength: 300,
     },
+    coverImage: {
+      type: String,
+      default: '',
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -61,6 +65,10 @@ const postSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -71,15 +79,15 @@ postSchema.index({ status: 1, createdAt: -1 });
 postSchema.index({ status: 1, views: -1 });
 postSchema.index({ status: 1, category: 1 });
 postSchema.index({ tags: 1 });
+postSchema.index({ isFeatured: 1, status: 1 });
 
-postSchema.pre('save', function (next) {
+postSchema.pre('save', function () {
   if (this.isModified('content')) {
     this.readingTime = calculateReadingTime(this.content);
     if (!this.excerpt) {
       this.excerpt = generateExcerpt(this.content);
     }
   }
-  next();
 });
 
 module.exports = mongoose.model('Post', postSchema);
