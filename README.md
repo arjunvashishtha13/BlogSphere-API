@@ -1,47 +1,67 @@
-<div align="center">
-  <h1>BlogSphere</h1>
-  <p>A modern, full-stack blogging platform built for writers and readers. Fast, beautiful, and secure.</p>
-</div>
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js" />
+  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+</p>
+
+<h1 align="center">BlogSphere</h1>
+
+<p align="center">
+  <b>A modern, full-stack blogging platform built for writers and readers. Fast, beautiful, and secure.</b>
+</p>
+
+<p align="center">
+  <a href="#"><b>🔗 Live Demo → coming soon</b></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshot-light.png" width="49%" alt="BlogSphere Light Mode" />
+  &nbsp;
+  <img src="docs/screenshot-dark.png" width="49%" alt="BlogSphere Dark Mode" />
+</p>
 
 ---
+## 🚀 Core Features
 
-## 🌟 Features
+- 📝 Rich Text Markdown Editing & Live Preview
+- 📚 Content Management: Save Drafts, Publish, Edit, and Delete
+- 👑 Full Admin Dashboard (User Management, Featured Posts)
+- ☁️ Cloudinary Integration (Fast & Secure Image Uploads)
+- 💬 User Engagement (Likes, Comments, Bookmarks)
+- 🧠 Smart Recommendations & Personalized Reading History
+- 📊 Analytics Tracking (View counts & insights)
+- 🛡️ Advanced Security (NoSQL injection prevention, XSS, Rate-limiting)
 
-BlogSphere is built with a focus on clean design, performance, and a rich user experience.
+## ✨ Key Highlights
 
-- **Rich Text Markdown Editing**: Write stories effortlessly with real-time Markdown preview.
-- **Content Management**: Save drafts, publish, edit, and delete posts.
-- **Admin Dashboard**: Full administrative control to manage users, ban accounts, delete comments, and feature standout posts.
-- **Cloudinary Integration**: Fast and secure image uploads for cover photos and inline post images.
-- **User Engagement**: Like, comment, and bookmark your favorite posts.
-- **Smart Recommendations**: A personalized reading history and tailored post recommendations.
-- **Analytics tracking**: View counts and basic analytics for writers.
-- **Security First**: Protected against NoSQL injection, XSS, and parameter pollution. Fully rate-limited.
 - **Modern UI/UX**: Fully responsive, dark-mode ready, glassmorphism design powered by Tailwind CSS and Framer Motion.
+- **Admin Capabilities**: Full administrative control to manage users, ban accounts, delete comments, and feature standout posts.
+- **Security First**: Protected against NoSQL injection, XSS, and parameter pollution. Fully rate-limited.
+- **Performance Optimized**: TanStack React Query for data fetching, caching, and state management alongside Zustand.
+
+---
+## 🏛 System Design
+
+- RESTful API design
+- Stateless JWT authentication
+- Role-Based Access Control (RBAC - Admin, User)
+- MVC backend architecture
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | React 18 (Vite), Tailwind CSS v4, Zustand, TanStack React Query, React Router v6, Framer Motion, Lucide React |
+| **Backend** | Node.js, Express.js (MVC Pattern), JWT, bcryptjs |
+| **Database** | MongoDB & Mongoose |
+| **Cloud / Media** | Cloudinary, Multer |
+| **Security** | Helmet, HPP, Express-Mongo-Sanitize |
 
 ---
 
-## 🛠️ Tech Stack
-
-**Frontend**
-- React 18 (Vite)
-- Tailwind CSS v4 (Styling)
-- Zustand (Global State Management)
-- TanStack React Query (Data Fetching & Caching)
-- React Router v6 (Navigation)
-- Framer Motion (Animations)
-- Lucide React (Icons)
-
-**Backend**
-- Node.js & Express.js
-- MongoDB & Mongoose (Database)
-- JSON Web Tokens (JWT) & bcryptjs (Authentication)
-- Cloudinary & Multer (Image processing and storage)
-- Helmet, HPP, Express-Mongo-Sanitize (Security)
-
----
-
-## 🚀 Getting Started (Local Development)
+## 🚀 Quick Start Guide
 
 ### Prerequisites
 - Node.js (v18+)
@@ -103,7 +123,7 @@ Start the frontend dev server:
 npm run dev
 ```
 
-The app will be running at `http://localhost:5173`.
+*The app will be running at `http://localhost:5173`.*
 
 ---
 
@@ -137,6 +157,15 @@ node scripts/seedAdmin.js your_email@example.com
 
 ---
 
-## 📝 License
+## 👨‍💻 Author
 
-This project is licensed under the MIT License.
+**Arjun Vashishtha**
+
+[![GitHub](https://img.shields.io/badge/GitHub-arjunvashishtha13-181717?style=for-the-badge&logo=github)](https://github.com/arjunvashishtha13)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-arjun--vashishtha13-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/arjun-vashishtha13)
+
+---
+
+<p align="center">
+Built with ❤️ using React, Node.js, Express, MongoDB and Cloudinary.
+</p>

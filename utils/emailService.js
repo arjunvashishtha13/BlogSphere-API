@@ -21,14 +21,18 @@ const sendEmail = async ({ to, subject, html }) => {
     return false;
   }
 
-  await transporter.sendMail({
-    from: `"BlogSphere" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
-
-  return true;
+  try {
+    await transporter.sendMail({
+      from: `"BlogSphere" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    return false;
+  }
 };
 
 const sendVerificationEmail = async (email, token) => {
